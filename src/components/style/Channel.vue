@@ -30,16 +30,17 @@
     import {fromLonLat} from 'ol/proj';
     import VectorLayer from 'ol/layer/Vector';
     import VectorSource from 'ol/source/Vector';
-    import Feature from 'ol/Feature';
-    import LineString from 'ol/geom/LineString';
+    import {Style,Stroke,Text,Fill} from 'ol/style';
     import FlowLineDashStyle from '../../lib/style/FlowLineDashStyle'
     import FlowLineStyle from '../../lib/style/FlowLineStyle'
+    import axios from 'axios'
+    import GeoJSON from 'ol/format/GeoJSON';
     export default {
         name: 'Channel1',
         data() {
             return {
                 id: "map",
-                arrowUrl: require('../../assets/images/arrow.png'),
+                featuresUrl: './data/river.geojson',
             }
         },
         props: {
@@ -55,7 +56,7 @@
                 target: this.id,
                 view: new View({
                     center: fromLonLat([116.39164, 39.89871]),
-                    zoom: 13,
+                    zoom: 12,
                 }),
             });
             const vectorSource = new VectorSource();
@@ -73,20 +74,77 @@
         methods: {
 
             addChannel1() {
-                // this.addFeatures();
+                const styles = [
+                    new Style({
+                        stroke: new Stroke({
+                            color:"rgb(0,255,0)",
+                            width:6,
+                            lineCap:"butt",
+                            // lineDash:[15,15],
+                        }),
+                        text: new Text({
+                            text: "绘制面",
+                            font: "12px sans-serif",
+                            overflow: false,
+                            fill: new Fill({
+                                color: "rgba( 74, 144 , 226 , 1 )"
+                            }),
+                            stroke: new Stroke({
+                                color: "rgba(0,0,0,1)",
+                                width: 0
+                            }),
+                            offsetX: 0,
+                            offsetY: 0,
+                            textAlign: 'center',
+                            textBaseline: 'middle',
+                            backgroundFill: new Fill({
+                                color: "rgba(0,0,0,0)"
+                            }),
+                            padding: [0,0,0,0],
+                            /* backgroundStroke: new Stroke({
+                                color: "rgba(0,0,0,1)",
+                                width: 0
+                            }) */
+                        }),
+                        zIndex:20
+                    }),
+                    new Style({
+                        stroke: new Stroke({
+                            color:"rgb(255,255,255)",
+                            width:4,
+                            lineCap:"butt",
+                            // lineDash:[15,15],
+                        }),
+                        zIndex:21
+                    })
+                ]
+                this.vectorLayer.setStyle(
+                    styles
+                );
                 
             },
 
             addChannel2() {
-                // this.addFeatures();
+                const styles = [
+                    new Style({
+                        stroke: new Stroke({
+                            color:"rgb(0,255,0)",
+                            width:2,
+                            lineDash:[15,15],
+                        }),
+                    })
+                ]
+                this.vectorLayer.setStyle(
+                    styles
+                );
             },
 
             addChannel3() {
                 const styles = [
                     new FlowLineStyle({
                         color: "rgb(0,255,0)",
-                        width: 4,
-                        arrowSize: [10,10],
+                        width: 2,
+                        arrowSize: [8,8],
                         arrow: 1,
                         map: this.map
                     }),
@@ -105,8 +163,8 @@
                 const styles = [
                     new FlowLineStyle({
                         color: "rgb(0,255,0)",
-                        width: 4,
-                        arrowSize: [10,10],
+                        width: 2,
+                        arrowSize: [8,8],
                         arrow: 1,
                         map: this.map
                     }),
@@ -121,99 +179,20 @@
             },
 
             addFeatures() {
+                let newFeatures = [];
                 this.vectorSource.clear();
-                /* this.vectorSource.addFeatures([
-                    new Feature({
-                        geometry: new LineString(
-                            [
-                                [
-                                    116.37753009796143,
-                                    39.898641809099914
-                                ],
-                                [
-                                    116.39533996582031,
-                                    39.89906981728181
-                                ],
-                                [
-                                    116.41207695007323,
-                                    39.89969536289287
-                                ],
-                                [
-                                    116.41156196594237,
-                                    39.909209536859834
-                                ]
-                            ]
-                        ).transform("EPSG:4326","EPSG:3857")
-                    })
-                ]) */
-
-                /* this.vectorSource.addFeatures([
-                    new Feature({
-                        geometry: new LineString([
-                            [
-                                116.38564109802246,
-                                39.906180946626705
-                            ],
-                            [
-                                116.3929796218872,
-                                39.90631262724705
-                            ],
-                            [
-                                116.40031814575194,
-                                39.90647722766652
-                            ]
-                    ]).transform("EPSG:4326","EPSG:3857")
-                                })
-                            ])
-                        }
-                    } */
-
-                this.vectorSource.addFeatures([
-                    new Feature({
-                        geometry: new LineString(
-                            [
-                                [
-                                    116.38559818267822,
-                                    39.921223820046116
-                                ],
-                                [
-                                    116.3858127593994,
-                                    39.91605629078665
-                                ],
-                                [
-                                    116.38607025146484,
-                                    39.911711314759685
-                                ],
-                                [
-                                116.39100551605225,
-                                39.91184298474967
-                                ],
-                                [
-                                116.39606952667236,
-                                39.91217215861727
-                                ],
-                                [
-                                116.39551162719727,
-                                39.91727415127369
-                                ],
-                                [
-                                116.39542579650879,
-                                39.92175042533686
-                                ],
-                                [
-                                116.3902759552002,
-                                39.92152003602051
-                                ],
-                                [
-                                116.38559818267822,
-                                39.921223820046116
-                                ]
-                            ]
-                        ).transform("EPSG:4326","EPSG:3857")
-                                })
-                            ])
-                        }
+                axios.get(this.featuresUrl).then((response) => {
+                    const features = new GeoJSON().readFeatures(response.data)
+                    for (let i = 0; i < features.length; i++) {
+                        const feature = features[i];
+                        feature.setGeometry(feature.getGeometry().transform("EPSG:4326","EPSG:3857"))
+                        newFeatures.push(feature); 
                     }
+                    this.vectorSource.addFeatures(newFeatures);
+                })
+                
+            }
+        }
         
     }
 </script>

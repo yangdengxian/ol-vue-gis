@@ -14,6 +14,11 @@ const routes = [{
             import ('../src/components/style/Canvas'),
     },
     {
+        path: '/customShape',
+        component: () =>
+            import ('../src/components/style/CustomShape'),
+    },
+    {
         path: '/',
         redirect: '/map' //系统默认页
     }

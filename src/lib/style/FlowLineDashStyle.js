@@ -54,14 +54,15 @@ class FlowLineDashStyle extends FlowLine {
     }
 
     _render(geom, e) {
-        if (e.geometry.getType() === 'LineString') {
+        if (e.geometry.getType() === 'LineString' || e.geometry.getType() === 'MultiLineString') {
             var g, p, ctx = e.context;
+            geom = e.geometry.getType() === 'LineString' ? geom : geom[0];
             // Get geometry used at drawing
             if (!this._visible) {
                 var a = e.pixelRatio / e.resolution;
                 var cos = Math.cos(e.rotation)
                 var sin = Math.sin(e.rotation)
-                g = e.geometry.getCoordinates();
+                g = e.geometry.getType() === 'LineString' ? e.geometry.getCoordinates() : e.geometry.getCoordinates()[0];
                 var dx = geom[0][0] - g[0][0] * a * cos - g[0][1] * a * sin;
                 var dy = geom[0][1] - g[0][0] * a * sin + g[0][1] * a * cos;
                 geom = [];
